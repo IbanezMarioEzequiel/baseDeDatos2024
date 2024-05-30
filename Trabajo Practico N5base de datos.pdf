@@ -1,0 +1,187 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema tp5
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema tp5
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `tp5` DEFAULT CHARACTER SET utf8 ;
+USE `tp5` ;
+
+-- -----------------------------------------------------
+-- Table `tp5`.`Naves`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`Naves` (
+  `codigo` INT NOT NULL,
+  `nombre` VARCHAR(25) NULL,
+  `fabricante` VARCHAR(35) NULL,
+  `velocidadMaxima` DECIMAL(4,1) NULL,
+  PRIMARY KEY (`codigo`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `tp5`.`Misiones`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`Misiones` (
+  `numero` INT NOT NULL,
+  `nombreClave` VARCHAR(15) NULL,
+  `dificultad` VARCHAR(25) NULL,
+  `descripcion` VARCHAR(45) NULL,
+  PRIMARY KEY (`numero`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `tp5`.`NavesMisiones`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`NavesMisiones` (
+  `numeroMisiones` INT NOT NULL,
+  `naveCodigo` INT NOT NULL,
+  `rol` VARCHAR(25) NULL,
+  PRIMARY KEY (`numeroMisiones`, `naveCodigo`),
+  INDEX `fk_NavesMisiones_Naves1_idx` (`naveCodigo` ASC) ,
+  CONSTRAINT `fk_NavesMisiones_Misiones`
+    FOREIGN KEY (`numeroMisiones`)
+    REFERENCES `tp5`.`Misiones` (`numero`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_NavesMisiones_Naves1`
+    FOREIGN KEY (`naveCodigo`)
+    REFERENCES `tp5`.`Naves` (`codigo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `tp5`.`Recursos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`Recursos` (
+  `id` INT NOT NULL,
+  `nombre` VARCHAR(25) NULL,
+  `precio` DECIMAL(6,2) NULL,
+  `codigoNaves` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_Recursos_Naves1_idx` (`codigoNaves` ASC) VISIBLE,
+  CONSTRAINT `fk_Recursos_Naves1`
+    FOREIGN KEY (`codigoNaves`)
+    REFERENCES `tp5`.`Naves` (`codigo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `tp5`.`Pilotos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`Pilotos` (
+  `id` INT NOT NULL,
+  `nombre` VARCHAR(25) NULL,
+  `experiencia` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `tp5`.`PilotosNaves`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tp5`.`PilotosNaves` (
+  `idPilotos` INT NOT NULL,
+  `codigoNaves` INT NOT NULL,
+  `informe` VARCHAR(45) NULL,
+  PRIMARY KEY (`idPilotos`, `codigoNaves`),
+  INDEX `fk_table1_Naves1_idx` (`codigoNaves` ASC),
+  CONSTRAINT `fk_table1_Pilotos1`
+    FOREIGN KEY (`idPilotos`)
+    REFERENCES `tp5`.`Pilotos` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_table1_Naves1`
+    FOREIGN KEY (`codigoNaves`)
+    REFERENCES `tp5`.`Naves` (`codigo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- ---- punto2 ----- --
+alter table misiones add Estado boolean;
+alter table naves add Estado boolean;
+alter table pilotos add Estado boolean;
+alter table recursos add Estado boolean;
+
+alter table pilotos add apodo varchar(25);
+alter table pilotos add apellido varchar(25);
+
+alter table misiones add fechaInicio date;
+
+-- -----punto3----- --
+create table Equipos (codigo int primary key,nombre varchar (25),cantidadIntegrante int);
+alter table Equipos add idPilotos int;
+alter table Equipos add constraint idPilotos foreign key (idPilotos) references pilotos(id);
+
+-- -----punto4----- --
+alter table naves drop fabricante;
+
+-- -----punto5----- --
+alter table pilotos change column nombre nombre varchar(30);
+
+-- -----punto6---- --
+insert into  pilotos (id,nombre,experiencia,estado,apodo,apellido) values 
+(1,"juan","1 año de experiencia",true,"juancho","martinez"),
+(2,"esteban","4 años de experiencia",false,"estebanquito","quito"),
+(3,"maria","2 años de experiencia",true,"mari","fernadez"),
+(4,"matias","6 meses de experiencia",true,"canotauro","fernandez");
+
+insert into naves (codigo,nombre,velocidadMaxima,estado)values
+(1, 'Enterprise', 500.0, true),
+(2, 'Millennium ', 750.0, false),
+(3, 'Serenity', 600.0, false),
+(4, 'Normandy', 700.0, true);
+
+insert into misiones(numero,nombreClave,dificultad,descripcion,estado,fechaInicio)values
+(1, 'Operación Nova', 'Alta', 'Explorar el sector Z-100', false, '2024-06-01'),
+(2, 'Misión Eclipse', 'Media', 'Establecer base lunar', true, '2024-05-23'),
+(3, 'Proyecto Cosmos', 'Baja', 'Investigación de campo en Marte', true, '2024-04-12'),
+(4, 'Voyager X', 'Alta', 'Recolección de muestras de asteroides', false, '2024-05-15');
+
+insert into navesmisiones(numeroMisiones,navecodigo,rol)values 
+(1,4,"recolector"),
+(2,3,"explorador"),
+(3,2,"constructor"),
+(4,1,"medico");
+
+insert into pilotosnaves(idPilotos,codigoNaves,informe)values 
+(1,2,"informe de Exploracion"),
+(2,3,"informe de velocidad"),
+(3,1,"informe de reparacion"),
+(4,4,"informe de recoleccion");
+
+insert into recursos(id,nombre,precio,codigoNaves,estado)values
+(1,"energia",1000.00,1,true),
+(2,"metal",2000.00,2,true),
+(3,"plantas",1500.00,3,true),
+(4,"combustible",3000.00,4,false);
+
+insert into equipos(codigo,nombre,cantidadIntegrante,idPilotos)values
+(1,"shadow",5,1),
+(2,"opossingforce",9,3),
+(3,"lamda",7,2),
+(4,"x-force",6,4);
+
+-- -----punto7----- --
+update naves set velocidadMaxima = 600.0 where codigo=2;
+
+-- -----punto8----- --
+delete from Recursos where id = 2;
